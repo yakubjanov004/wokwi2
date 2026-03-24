@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barmen Paneli | Smart Billiard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #060e07; --bg-card: #0d1f0f; --gold: #d4a843; --text: #f5edd6;
+      --new: #ef4444; --prep: #f59e0b; --ready: #22c55e;
+    }
+    body { background: var(--bg-deep); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gold); padding-bottom: 15px; margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .card { background: var(--bg-card); border: 2px solid #1f3520; border-radius: 15px; padding: 20px; position: relative; }
+    .card[data-status="new"] { border-color: var(--new); }
+    .card[data-status="preparing"] { border-color: var(--prep); }
+    .card[data-status="ready"] { border-color: var(--ready); }
+    .table-num { font-size: 1.5rem; font-weight: bold; color: var(--gold); }
+    .items { margin: 15px 0; font-family: 'JetBrains Mono', monospace; }
+    .item { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 5px 0; }
+    .btn { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    .btn-accept { background: var(--prep); color: #000; }
+    .btn-ready { background: var(--ready); color: #000; }
+    .btn-deliver { background: #5a7050; color: #fff; }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="font-size: 1.5rem; font-weight: bold; color: var(--gold);">👨‍🍳 BARMEN PANELI</div>
+    <div id="clock">14:23</div>
+  </header>
+  <div class="grid" id="orders-grid">
+    <!-- Buyurtmalar -->
+  </div>
+
+  <script>
+    const ws = new WebSocket(`ws://${location.host}/ws`);
+    ws.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        renderOrders(data.orders);
+        document.getElementById('clock').innerText = data.clock;
+    };
+
+    function renderOrders(orders) {
+        const grid = document.getElementById('orders-grid');
+        grid.innerHTML = '';
+        orders.forEach(o => {
+            if (o.status === 'delivered' || o.status === 'cancelled') return;
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.dataset.status = o.status;
+            let actionBtn = '';
+            if (o.status === 'new') actionBtn = `<button class="btn btn-accept" onclick="updateOrder('${o.id}', 'preparing')">Qabul qilish</button>`;
+            else if (o.status === 'preparing') actionBtn = `<button class="btn btn-ready" onclick="updateOrder('${o.id}', 'ready')">Tayyor</button>`;
+            else if (o.status === 'ready') actionBtn = `<button class="btn btn-deliver" onclick="updateOrder('${o.id}', 'delivered')">Yetkazildi</button>`;
+
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between;">
+                    <span class="table-num">STOL ${o.tableId}</span>
+                    <span style="font-size:0.8rem;">${o.time}</span>
+                </div>
+                <div class="items">
+                    ${o.items.map(i => `<div class="item"><span>${i.name} x${i.qty}</span></div>`).join('')}
+                </div>
+                ${o.note ? `<div style="font-size:0.8rem; color:var(--prep); margin-bottom:10px;">Izoh: ${o.note}</div>` : ''}
+                ${actionBtn}
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function updateOrder(id, status) {
+        fetch('/orders', {
+            method: 'POST',
+            body: JSON.stringify({ id, status })
+        });
+    }
+  </script>
+</body>
+</html>

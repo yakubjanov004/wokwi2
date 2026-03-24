@@ -1,0 +1,20 @@
+:root {
+  --felt-green: #1a4a2e;
+  --felt-dark: #0d2e1c;
+  --wood-brown: #5c3a1e;
+  --wood-light: #8b5e3c;
+  --lamp-yellow: #f5c842;
+  --lamp-glow: #fff176;
+  --cue-white: #f0ede0;
+  --ball-red: #cc2200;
+  --ball-yellow: #f5c842;
+  --ball-blue: #1a3a8c;
+  --ball-black: #1a1a1a;
+  --active-green: #22c55e;
+  --danger-red: #ef4444;
+  --gold: #d4a017;
+  --ui-border: rgba(255, 255, 255, 0.08);
+}
+
+/* HTML files keep their CSS inline for SPIFFS portability.
+   This file exists as a shared palette reference for future edits. */

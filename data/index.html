@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Billiard | Stol Paneli</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #060e07;
+      --felt: #1a5c35;
+      --wood: #5c3318;
+      --gold: #d4a843;
+      --neon-green: #39ff14;
+      --neon-red: #ff3131;
+      --lamp-off: #2a2a2a;
+      --lamp-on: #fff176;
+    }
+    body { 
+      background: var(--bg); 
+      color: #f5edd6; 
+      font-family: 'Oswald', sans-serif; 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      height: 100vh; 
+      overflow: hidden; 
+    }
+    
+    .top-bar { 
+      padding: 15px 30px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      border-bottom: 2px solid var(--gold); 
+      background: rgba(0,0,0,0.8);
+      box-shadow: 0 0 20px rgba(212,168,67,0.3);
+      z-index: 10;
+    }
+    .table-title { 
+      font-family: 'Orbitron', sans-serif; 
+      font-size: 2.2rem; 
+      color: var(--gold); 
+      text-shadow: 0 0 10px rgba(212,168,67,0.5);
+    }
+    
+    .lamp-container {
+      display: flex;
+      justify-content: center;
+      gap: 100px;
+      margin-top: 20px;
+    }
+    .lamp {
+      width: 120px;
+      height: 40px;
+      background: var(--lamp-off);
+      border-radius: 60px 60px 0 0;
+      position: relative;
+      transition: 0.5s;
+    }
+    .lamp::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 10%;
+      width: 80%;
+      height: 200px;
+      background: radial-gradient(ellipse at top, rgba(255, 241, 118, 0.4) 0%, transparent 70%);
+      opacity: 0;
+      transition: 0.5s;
+    }
+    .lamp.active {
+      background: var(--lamp-on);
+      box-shadow: 0 0 40px var(--lamp-on);
+    }
+    .lamp.active::after {
+      opacity: 1;
+    }
+
+    .main-content { 
+      flex: 1; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      padding: 30px;
+      position: relative;
+    }
+    .status-panel { 
+      background: rgba(13,31,15,0.95); 
+      border: 3px solid var(--gold); 
+      border-radius: 35px; 
+      padding: 50px; 
+      text-align: center; 
+      width: min(580px, 100%); 
+      box-shadow: 0 0 50px rgba(0,0,0,0.8), inset 0 0 30px rgba(212,168,67,0.1);
+      position: relative;
+      z-index: 5;
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--neon-red);
+      margin-right: 15px;
+      box-shadow: 0 0 15px var(--neon-red);
+      transition: 0.5s;
+    }
+    .status-indicator.ready {
+      background: var(--neon-green);
+      box-shadow: 0 0 15px var(--neon-green);
+    }
+
+    .timer { 
+      font-family: 'Orbitron', sans-serif; 
+      font-size: 5rem; 
+      color: var(--gold); 
+      margin: 10px 0; 
+      text-shadow: 0 0 30px rgba(212,168,67,0.6);
+      letter-spacing: 5px;
+    }
+    
+    .amount-label {
+      font-size: 1.8rem;
+      color: #fff;
+      margin-bottom: 30px;
+      font-weight: bold;
+    }
+
+    .btn { 
+      padding: 25px 50px; 
+      border-radius: 20px; 
+      border: none; 
+      font-size: 1.8rem; 
+      font-weight: bold; 
+      cursor: pointer; 
+      text-transform: uppercase; 
+      transition: 0.3s; 
+      font-family: 'Orbitron', sans-serif;
+    }
+    .btn-start { 
+      background: var(--gold); 
+      color: #000; 
+      box-shadow: 0 0 30px rgba(212,168,67,0.5); 
+    }
+    .btn-start:hover { 
+      transform: scale(1.05); 
+      box-shadow: 0 0 50px rgba(212,168,67,0.8);
+    }
+    .btn-stop {
+      background: var(--neon-red);
+      color: #fff;
+      box-shadow: 0 0 30px rgba(255, 49, 49, 0.5);
+    }
+
+    .bottom-actions { 
+      padding: 30px; 
+      display: flex; 
+      gap: 30px; 
+      justify-content: center; 
+      background: rgba(0,0,0,0.5);
+      border-top: 1px solid rgba(212,168,67,0.3);
+    }
+    .btn-action { 
+      background: #1f3520; 
+      color: #fff; 
+      padding: 20px 40px; 
+      border-radius: 15px; 
+      border: 2px solid var(--gold); 
+      cursor: pointer; 
+      font-size: 1.2rem;
+      transition: 0.3s;
+      font-weight: bold;
+    }
+    .btn-action:hover {
+      background: var(--gold);
+      color: #000;
+      box-shadow: 0 0 20px var(--gold);
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+    .active-text {
+      animation: pulse 2s infinite;
+      color: var(--neon-green);
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="table-title" id="table-label">STOL #--</div>
+    <div id="clock" style="font-size: 1.8rem; font-family: 'Orbitron'; color: var(--gold);">14:24</div>
+  </div>
+
+  <div class="lamp-container">
+    <div class="lamp" id="lamp-1"></div>
+    <div class="lamp" id="lamp-2"></div>
+    <div class="lamp" id="lamp-3"></div>
+  </div>
+
+  <div class="main-content">
+    <div class="status-panel">
+        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+          <div class="status-indicator ready" id="status-indicator"></div>
+          <h2 id="status-text" style="margin: 0; font-size: 2rem; letter-spacing: 2px;">STOL TAYYOR</h2>
+        </div>
+        
+        <div class="timer" id="main-timer">00:00:00</div>
+        <div class="amount-label" id="main-amount">0 so'm</div>
+        
+        <div style="margin-bottom:30px; color:#c7ceb7; font-size: 1.1rem; line-height: 1.6;">
+          <div>Vaqt va hisob real vaqtda yangilanib boradi.</div>
+          <div>Barcha xizmatlar avtomatlashtirilgan.</div>
+        </div>
+        
+        <button class="btn btn-start" id="action-btn" onclick="mainAction()">O'YINNI BOSHLASH</button>
+    </div>
+  </div>
+
+  <div class="bottom-actions">
+    <button class="btn-action" onclick="order()">🍽️ MENU / BUYURTMA</button>
+    <button class="btn-action" onclick="callBarmen()">🔔 BARMENNI CHAQIRISH</button>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const tableId = urlParams.get('t') || 1;
+    document.getElementById('table-label').innerText = "STOL #" + tableId;
+
+    const ws = new WebSocket(`ws://${location.host}/ws`);
+    ws.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        const t = data.tables.find(x => x.id == tableId);
+        if (t) {
+            updateUI(t);
+        }
+        document.getElementById('clock').innerText = data.clock;
+    };
+
+    function updateUI(t) {
+        document.getElementById('main-timer').innerText = t.elapsed_display;
+        document.getElementById('main-amount').innerText = formatMoney(t.total_due);
+        
+        const statusText = document.getElementById('status-text');
+        const actionBtn = document.getElementById('action-btn');
+        const indicator = document.getElementById('status-indicator');
+        const lamps = [document.getElementById('lamp-1'), document.getElementById('lamp-2'), document.getElementById('lamp-3')];
+
+        if (t.active) {
+            statusText.innerText = "O'YIN DAVOM ETMOQDA";
+            statusText.className = "active-text";
+            actionBtn.innerText = "O'YINNI TUGATISH";
+            actionBtn.className = "btn btn-stop";
+            indicator.className = "status-indicator";
+            lamps.forEach(l => l.classList.add('active'));
+        } else {
+            statusText.innerText = "STOL TAYYOR";
+            statusText.className = "";
+            actionBtn.innerText = "O'YINNI BOSHLASH";
+            actionBtn.className = "btn btn-start";
+            indicator.className = "status-indicator ready";
+            lamps.forEach(l => l.classList.remove('active'));
+        }
+    }
+
+    function mainAction() {
+        const btn = document.getElementById('action-btn');
+        if (btn.innerText.includes("TUGATISH")) {
+            if(!confirm("Haqiqatdan ham o'yinni tugatmoqchimisiz?")) return;
+        }
+        fetch(`/toggle?id=${tableId}`);
+    }
+
+    function order() { alert("Menyu yuklanmoqda..."); }
+    function callBarmen() { 
+        fetch(`/call?id=${tableId}&type=barmen`).then(() => {
+            alert("Barmen chaqirildi! Tez orada yetib keladi.");
+        });
+    }
+    function formatMoney(n) { return new Intl.NumberFormat('uz-UZ').format(n) + " so'm"; }
+  </script>
+</body>
+</html>

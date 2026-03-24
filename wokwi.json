@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "env": { "unit": "mm" },
+  "author": "Anonymous",
+  "title": "Smart Billiard ESP-NOW Master LCD 9 Tables",
+  "desc": "Bitta universal firmware: 1 master + I2C LCD + 9 stol, role va ID diagramdagi strap pinlar orqali aniqlanadi"
+}

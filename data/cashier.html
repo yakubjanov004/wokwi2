@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kassir Paneli | Smart Billiard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #060e07; --bg-card: #0d1f0f; --gold: #d4a843; --text: #f5edd6;
+    }
+    body { background: var(--bg-deep); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gold); padding-bottom: 15px; }
+    .main { display: grid; grid-template-columns: 1fr 400px; gap: 20px; margin-top: 20px; }
+    .tables-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .tab-item { background: var(--bg-card); padding: 15px; border-radius: 12px; border: 2px solid #1f3520; cursor: pointer; text-align: center; }
+    .tab-item.active { border-color: var(--gold); background: rgba(212,168,67,0.1); }
+    .receipt-panel { background: #0c140d; border-radius: 15px; padding: 25px; border: 1px solid var(--gold); }
+    .r-header { text-align: center; border-bottom: 1px dashed #444; padding-bottom: 10px; margin-bottom: 15px; }
+    .line { display: flex; justify-content: space-between; margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; }
+    .total { font-size: 1.4rem; font-weight: bold; color: var(--gold); border-top: 2px solid var(--gold); padding-top: 10px; margin-top: 10px; }
+    .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-top: 15px; }
+    .btn-pay { background: var(--gold); color: #000; font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="font-size: 1.5rem; font-weight: bold; color: var(--gold);">🧾 KASSIR PANELI</div>
+    <div id="revenue">Bugun: 0 so'm</div>
+  </header>
+  
+  <div class="main">
+    <div class="tables-grid" id="tables-list">
+        <!-- Stollar -->
+    </div>
+
+    <div class="receipt-panel" id="receipt">
+        <div class="r-header">
+            <h3>BILLIARD RECEIPT</h3>
+            <p id="r-table">STOL tanlanmagan</p>
+        </div>
+        <div id="r-items">
+            <!-- Hisob tafsilotlari -->
+        </div>
+        <div class="total" id="r-total">JAMI: 0 so'm</div>
+        <button class="btn btn-pay" onclick="pay()">TO'LOVNI TASDIQLASH</button>
+    </div>
+  </div>
+
+  <script>
+    let activeT = 1;
+    let tablesData = [];
+    const ws = new WebSocket(`ws://${location.host}/ws`);
+    
+    ws.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        tablesData = data.tables;
+        renderTables(data.tables);
+        updateReceipt();
+        document.getElementById('revenue').innerText = "Bugun: " + formatMoney(data.daily_revenue);
+    };
+
+    function renderTables(tables) {
+        const list = document.getElementById('tables-list');
+        list.innerHTML = '';
+        tables.forEach(t => {
+            const el = document.createElement('div');
+            el.className = `tab-item ${activeT === t.id ? 'active' : ''}`;
+            el.onclick = () => { activeT = t.id; updateReceipt(); renderTables(tablesData); };
+            el.innerHTML = `
+                <div style="font-weight:bold;">STOL ${t.id}</div>
+                <div style="font-size:0.8rem; color:${t.active ? '#ef4444' : '#5a7050'}">${t.status.toUpperCase()}</div>
+                <div style="margin-top:5px;">${formatMoney(t.total_due)}</div>
+            `;
+            list.appendChild(el);
+        });
+    }
+
+    function updateReceipt() {
+        const t = tablesData.find(x => x.id === activeT);
+        if (!t) return;
+        document.getElementById('r-table').innerText = "STOL #" + t.id;
+        let html = `
+            <div class="line"><span>Vaqt (${t.elapsed_display})</span> <span>${formatMoney(t.amount)}</span></div>
+            <div class="line"><span>Buyurtmalar (${t.orders_count})</span> <span>${formatMoney(t.orders_amount)}</span></div>
+        `;
+        document.getElementById('r-items').innerHTML = html;
+        document.getElementById('r-total').innerText = "JAMI: " + formatMoney(t.total_due);
+    }
+
+    function pay() {
+        if (!confirm("To'lovni tasdiqlaysizmi?")) return;
+        fetch(`/stop?t=${activeT}&payment=cash`).then(() => alert("To'lov muvaffaqiyatli yakunlandi!"));
+    }
+
+    function formatMoney(n) { return new Intl.NumberFormat('uz-UZ').format(n) + " so'm"; }
+  </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+# PlatformIO build files
+.pio
+.pioenvs
+.piolibdeps
+
+# Python virtual environment
+venv/
+.venv/
+ENV/
+
+# Wokwi specific
+wokwi.pcap
+*.pcap
+
+# Build artifacts
+*.bin
+*.elf
+*.map
+*.hex
+
+# Backup and temp files
+*.bak
+*~
+*.swp
+*.tmp
+
+# VS Code and IDE settings
+.vscode/
+.idea/
+.project
+.settings/
+
+# PlatformIO internal
+.platformio-home/
+.platformio-home-table/
+
+# OS files
+Thumbs.db
+.DS_Store

@@ -1,0 +1,17 @@
+[wokwi]
+version = 1
+firmware = ".pio/build/esp32dev/firmware.bin"
+elf = ".pio/build/esp32dev/firmware.elf"
+diagram = "diagram.json"
+
+[[bin]]
+source = ".pio/build/esp32dev/partitions.bin"
+target = 0x8000
+
+[[bin]]
+source = ".pio/build/esp32dev/littlefs.bin"
+target = 0x290000
+
+[[net.forward]]
+from = "localhost:9090"
+to = "target:80"
